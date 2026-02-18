@@ -75,6 +75,7 @@ class CartonQuantityInput extends StatelessWidget {
                     color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
                   ),
                   decoration: InputDecoration(
+                    fillColor: Colors.transparent,
                     hintText: '٠',
                     hintStyle: TextStyle(
                       fontSize: 56,
