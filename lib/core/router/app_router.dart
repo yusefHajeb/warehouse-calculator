@@ -9,6 +9,9 @@ import '../../features/product/presentation/cubit/product_form_cubit.dart';
 import '../../features/product/domain/entities/product.dart';
 import '../../features/calculator/presentation/pages/calculate_order_page.dart';
 import '../../features/calculator/presentation/pages/calculation_results_page.dart';
+import '../../features/calculator/presentation/cubit/order_calculator_cubit/order_calculator_cubit.dart';
+import '../../features/calculator/presentation/cubit/calulation_result_cubit/calculation_result_cubit.dart';
+import '../../features/calculator/domain/entities/calculation_result.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
 import '../di/injection_container.dart';
@@ -53,7 +56,12 @@ class AppRouter {
           ),
           GoRoute(
             path: calculator,
-            pageBuilder: (context, state) => const NoTransitionPage(child: CalculateOrderPage()),
+            pageBuilder: (context, state) => NoTransitionPage(
+              child: BlocProvider(
+                create: (_) => sl<OrderCalculatorCubit>()..loadProducts(),
+                child: const CalculateOrderPage(),
+              ),
+            ),
           ),
           GoRoute(
             path: settings,
@@ -84,7 +92,13 @@ class AppRouter {
       ),
       GoRoute(
         path: calculationResults,
-        builder: (context, state) => const CalculationResultsPage(),
+        builder: (context, state) {
+          final result = state.extra as CalculationResult;
+          return BlocProvider(
+            create: (_) => CalculationResultCubit(result),
+            child: const CalculationResultsPage(),
+          );
+        },
       ),
     ],
   );

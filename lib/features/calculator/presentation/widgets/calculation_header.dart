@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../cubit/order_calculator_cubit/order_calculator_cubit.dart';
 
 class CalculationHeader extends StatelessWidget {
   const CalculationHeader({super.key});
@@ -49,9 +51,7 @@ class CalculationHeader extends StatelessWidget {
 
           // Reset button
           GestureDetector(
-            onTap: () {
-              // TODO: Wire reset logic in Phase 2
-            },
+            onTap: () => context.read<OrderCalculatorCubit>().reset(),
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Text(

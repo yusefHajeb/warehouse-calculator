@@ -1,118 +1,134 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../domain/entities/calculation_result.dart';
+import '../cubit/calulation_result_cubit/calculation_result_cubit.dart';
+
+String _formatNumber(int number) {
+  final str = number.toString();
+  final buffer = StringBuffer();
+  for (var i = 0; i < str.length; i++) {
+    if (i > 0 && (str.length - i) % 3 == 0) buffer.write(',');
+    buffer.write(str[i]);
+  }
+  return buffer.toString();
+}
 
 class ProductionSummaryCard extends StatelessWidget {
   const ProductionSummaryCard({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.30),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Decorative blurs
-          Positioned(
-            left: -24,
-            top: -24,
-            child: Container(
-              width: 128,
-              height: 128,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.10),
-              ),
-            ),
-          ),
-          Positioned(
-            right: -24,
-            bottom: -24,
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.10),
-              ),
-            ),
-          ),
+    return BlocBuilder<CalculationResultCubit, CalculationResult>(
+      builder: (context, state) {
+        final formattedPieces = _formatNumber(state.totalPieces);
+        final packSize = '${state.product.piecesPerCarton} قطعة/كرتون';
 
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.30),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Stack(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppStrings.resultsTotalProduction,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withValues(alpha: 0.75),
-                    ),
+              // Decorative blurs
+              Positioned(
+                left: -24,
+                top: -24,
+                child: Container(
+                  width: 128,
+                  height: 128,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.10),
                   ),
-                  Icon(Icons.inventory_2_rounded, color: Colors.white.withValues(alpha: 0.60)),
-                ],
+                ),
               ),
-              const SizedBox(height: 8),
-
-              // Big number
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  const Text(
-                    '12,500',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -1,
-                      color: Colors.white,
-                    ),
+              Positioned(
+                right: -24,
+                bottom: -24,
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.10),
                   ),
-                  const SizedBox(width: 8),
-                  Text(
-                    AppStrings.resultsTotalPieces,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withValues(alpha: 0.75),
-                    ),
-                  ),
-                ],
+                ),
               ),
 
-              const SizedBox(height: 16),
-
-              // Divider
-              Container(height: 1, color: Colors.white.withValues(alpha: 0.20)),
-
-              const SizedBox(height: 16),
-
-              // Details row
-              Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _DetailColumn(label: AppStrings.resultsPackSize, value: '25 قطعة/كرتون'),
-                  const SizedBox(width: 24),
-                  _DetailColumn(label: AppStrings.resultsBatchNumber, value: '#PB-2023-88'),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppStrings.resultsTotalProduction,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                      Icon(Icons.inventory_2_rounded, color: Colors.white.withValues(alpha: 0.60)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Big number
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        formattedPieces,
+                        style: const TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -1,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        AppStrings.resultsTotalPieces,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white.withValues(alpha: 0.75),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Divider
+                  Container(height: 1, color: Colors.white.withValues(alpha: 0.20)),
+
+                  const SizedBox(height: 16),
+
+                  // Details row
+                  Row(
+                    children: [_DetailColumn(label: AppStrings.resultsPackSize, value: packSize)],
+                  ),
                 ],
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
