@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../cubit/product_form_cubit.dart';
+import '../cubit/product_form_state.dart';
 
-/// Header bar for the Add/Edit Product page.
-///
-/// Contains Cancel, Title, and Save actions.
 class AddEditProductHeader extends StatelessWidget {
   const AddEditProductHeader({super.key});
 
@@ -20,41 +21,49 @@ class AddEditProductHeader extends StatelessWidget {
           bottom: BorderSide(color: isDark ? AppColors.borderDark : AppColors.borderLight),
         ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).maybePop(),
-            child: Text(
-              AppStrings.cancel,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+      child: BlocBuilder<ProductFormCubit, ProductFormState>(
+        buildWhen: (prev, curr) => prev.isEditing != curr.isEditing || prev.status != curr.status,
+        builder: (context, state) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              GestureDetector(
+                onTap: () => context.pop(),
+                child: Text(
+                  AppStrings.cancel,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
+                  ),
+                ),
               ),
-            ),
-          ),
-
-          Text(
-            AppStrings.addEditProductTitle,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
-            ),
-          ),
-
-          // Save
-          GestureDetector(
-            onTap: () {
-              // TODO: Wire save logic in Phase 2
-            },
-            child: const Text(
-              AppStrings.save,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: AppColors.primary),
-            ),
-          ),
-        ],
+              Text(
+                state.isEditing ? 'تعديل المنتج' : 'إضافة منتج جديد',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.textDarkPrimary : AppColors.textPrimary,
+                ),
+              ),
+              GestureDetector(
+                onTap: state.status == ProductFormStatus.submitting
+                    ? null
+                    : () => context.read<ProductFormCubit>().saveProduct(),
+                child: Text(
+                  AppStrings.save,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: state.status == ProductFormStatus.submitting
+                        ? AppColors.primary.withValues(alpha: 0.4)
+                        : AppColors.primary,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

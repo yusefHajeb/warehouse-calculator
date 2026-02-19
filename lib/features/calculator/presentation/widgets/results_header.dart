@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 
@@ -23,7 +24,7 @@ class ResultsHeader extends StatelessWidget {
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(20),
             child: InkWell(
-              onTap: () => Navigator.of(context).maybePop(),
+              onTap: () => context.pop(),
               borderRadius: BorderRadius.circular(20),
               child: Padding(
                 padding: const EdgeInsets.all(8),

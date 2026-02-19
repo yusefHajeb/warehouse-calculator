@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../cubit/product_list_cubit.dart';
 
 class ProductsHeader extends StatelessWidget {
   const ProductsHeader({super.key});
@@ -14,12 +16,10 @@ class ProductsHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Column(
         children: [
-          // Title row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title + subtitle
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -43,14 +43,10 @@ class ProductsHeader extends StatelessWidget {
                   ),
                 ],
               ),
-
-              // Notification bell
-              _NotificationBell(),
+              const _NotificationBell(),
             ],
           ),
           const SizedBox(height: 16),
-
-          // Search bar
           _SearchBar(),
         ],
       ),
@@ -58,7 +54,6 @@ class ProductsHeader extends StatelessWidget {
   }
 }
 
-/// Notification bell icon with red dot indicator.
 class _NotificationBell extends StatelessWidget {
   const _NotificationBell();
 
@@ -103,10 +98,7 @@ class _NotificationBell extends StatelessWidget {
   }
 }
 
-/// Search bar with filter button.
 class _SearchBar extends StatelessWidget {
-  const _SearchBar();
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -127,6 +119,9 @@ class _SearchBar extends StatelessWidget {
       ),
       child: TextField(
         textAlign: TextAlign.right,
+        onChanged: (query) {
+          context.read<ProductListCubit>().searchProducts(query);
+        },
         decoration: InputDecoration(
           hintText: AppStrings.searchProductsHint,
           hintStyle: const TextStyle(color: AppColors.textTertiary),
@@ -138,9 +133,7 @@ class _SearchBar extends StatelessWidget {
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           prefixIcon: IconButton(
-            onPressed: () {
-              // TODO: Filter logic in Phase 2
-            },
+            onPressed: () {},
             icon: const Icon(Icons.tune_rounded, color: AppColors.primary, size: 22),
           ),
           suffixIcon: const Padding(

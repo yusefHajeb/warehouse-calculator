@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:product_management/features/calculator/presentation/pages/calculation_results_page.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import '../../../../core/router/app_router.dart';
 
 class CalculateButton extends StatelessWidget {
   const CalculateButton({super.key});
@@ -19,12 +20,7 @@ class CalculateButton extends StatelessWidget {
         ),
       ),
       child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CalculationResultsPage()),
-          );
-        },
+        onPressed: () => context.push(AppRouter.calculationResults),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
