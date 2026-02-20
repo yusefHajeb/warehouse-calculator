@@ -11,6 +11,7 @@ import '../../features/product/domain/usecases/update_product.dart';
 import '../../features/product/presentation/cubit/product_form_cubit.dart';
 import '../../features/product/presentation/cubit/product_list_cubit.dart';
 import '../../features/calculator/presentation/cubit/order_calculator_cubit/order_calculator_cubit.dart';
+import '../../features/calculator/presentation/cubit/bulk_order_cubit/bulk_order_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -32,6 +33,7 @@ Future<void> init() async {
 
   // Cubits
   sl.registerFactory(() => OrderCalculatorCubit(getProducts: sl(), searchProducts: sl()));
+  sl.registerFactory(() => BulkOrderCubit(getProducts: sl(), searchProducts: sl()));
 
   // Use Cases
   sl.registerLazySingleton(() => GetProducts(sl()));

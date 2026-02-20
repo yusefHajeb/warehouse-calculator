@@ -17,8 +17,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'حاسبة المستودع',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.lightTheme,
       themeMode: ThemeMode.system,
       routerConfig: AppRouter.router,
       builder: (context, child) {

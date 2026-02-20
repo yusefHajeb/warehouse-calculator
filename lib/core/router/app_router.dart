@@ -9,8 +9,12 @@ import '../../features/product/presentation/cubit/product_form_cubit.dart';
 import '../../features/product/domain/entities/product.dart';
 import '../../features/calculator/presentation/pages/calculate_order_page.dart';
 import '../../features/calculator/presentation/pages/calculation_results_page.dart';
+import '../../features/calculator/presentation/pages/bulk_order_page.dart';
+import '../../features/calculator/presentation/pages/bulk_results_page.dart';
 import '../../features/calculator/presentation/cubit/order_calculator_cubit/order_calculator_cubit.dart';
 import '../../features/calculator/presentation/cubit/calulation_result_cubit/calculation_result_cubit.dart';
+import '../../features/calculator/presentation/cubit/bulk_order_cubit/bulk_order_cubit.dart';
+import '../../features/calculator/presentation/cubit/bulk_result_cubit/bulk_result_cubit.dart';
 import '../../features/calculator/domain/entities/calculation_result.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_strings.dart';
@@ -27,6 +31,8 @@ class AppRouter {
   static const String editProduct = '/products/edit';
   static const String calculator = '/calculator';
   static const String calculationResults = '/calculator/results';
+  static const String bulkOrder = '/calculator/bulk';
+  static const String bulkOrderResults = '/calculator/bulk/results';
   static const String settings = '/settings';
 
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -97,6 +103,23 @@ class AppRouter {
           return BlocProvider(
             create: (_) => CalculationResultCubit(result),
             child: const CalculationResultsPage(),
+          );
+        },
+      ),
+      GoRoute(
+        path: bulkOrder,
+        builder: (context, state) => BlocProvider(
+          create: (_) => sl<BulkOrderCubit>()..loadProducts(),
+          child: const BulkOrderPage(),
+        ),
+      ),
+      GoRoute(
+        path: bulkOrderResults,
+        builder: (context, state) {
+          final result = state.extra as BulkCalculationResult;
+          return BlocProvider(
+            create: (_) => BulkResultCubit(result),
+            child: const BulkResultsPage(),
           );
         },
       ),
