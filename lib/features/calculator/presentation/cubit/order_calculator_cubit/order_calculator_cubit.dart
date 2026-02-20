@@ -118,6 +118,7 @@ class OrderCalculatorCubit extends Cubit<OrderCalculatorState> {
     final materials = product.ingredients.map((ingredient) {
       final requiredKg = totalPieces * ingredient.quantityPerPiece / 1000;
       return MaterialRequirement(
+        ingredientId: ingredient.id,
         ingredientName: ingredient.name,
         perPieceGrams: ingredient.quantityPerPiece,
         requiredKg: requiredKg,

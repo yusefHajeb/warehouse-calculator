@@ -1,4 +1,3 @@
-import 'dart:convert';
 import '../../domain/entities/product.dart';
 import 'ingredient_model.dart';
 
@@ -13,34 +12,31 @@ class ProductModel extends Product {
     super.updatedAt,
   });
 
-  factory ProductModel.fromMap(Map<String, dynamic> map) {
-    final rawIngredients = map['ingredients'];
-    final List ingredientList = rawIngredients is String
-        ? jsonDecode(rawIngredients) as List
-        : rawIngredients as List;
-
+  /// Builds a ProductModel from a products table row.
+  /// Ingredients must be supplied separately (loaded via JOIN).
+  factory ProductModel.fromMap(
+    Map<String, dynamic> map, {
+    List<IngredientModel> ingredients = const [],
+  }) {
     return ProductModel(
       id: map['id'] as String,
       name: map['name'] as String,
       piecesPerBox: map['pieces_per_box'] as int,
       boxesPerCarton: map['boxes_per_carton'] as int,
-      ingredients: ingredientList
-          .map((e) => IngredientModel.fromMap(e as Map<String, dynamic>))
-          .toList(),
+      ingredients: ingredients,
       createdAt: _parseDateTime(map['created_at']),
       updatedAt: _parseDateTime(map['updated_at']),
     );
   }
 
+  /// Produces a map for inserting/updating the products table only.
+  /// Does NOT include ingredients (those go to product_ingredients).
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'name': name,
       'pieces_per_box': piecesPerBox,
       'boxes_per_carton': boxesPerCarton,
-      'ingredients': jsonEncode(
-        ingredients.map((e) => IngredientModel.fromEntity(e).toMap()).toList(),
-      ),
       'created_at': createdAt?.millisecondsSinceEpoch,
       'updated_at': updatedAt?.millisecondsSinceEpoch,
     };

@@ -1,29 +1,49 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/ingredient.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/usecases/add_product.dart';
+import '../../domain/usecases/get_all_ingredients.dart';
 import '../../domain/usecases/update_product.dart';
 import 'product_form_state.dart';
 
 class ProductFormCubit extends Cubit<ProductFormState> {
   final AddProduct _addProduct;
   final UpdateProduct _updateProduct;
+  final GetAllIngredients _getAllIngredients;
 
-  ProductFormCubit({required AddProduct addProduct, required UpdateProduct updateProduct})
-    : _addProduct = addProduct,
-      _updateProduct = updateProduct,
-      super(ProductFormState.initial());
+  ProductFormCubit({
+    required AddProduct addProduct,
+    required UpdateProduct updateProduct,
+    required GetAllIngredients getAllIngredients,
+  }) : _addProduct = addProduct,
+       _updateProduct = updateProduct,
+       _getAllIngredients = getAllIngredients,
+       super(ProductFormState.initial());
 
-  void initForm(Product? existingProduct) {
+  // ── Initialisation ─────────────────────────────────────────────────────────
+
+  Future<void> initForm(Product? existingProduct) async {
     if (existingProduct != null) {
       emit(ProductFormState(product: existingProduct, isEditing: true));
     } else {
       emit(ProductFormState.initial());
     }
+    await loadIngredients();
   }
 
-  // ── Field Updates ──
+  /// Loads the canonical ingredient catalogue from the DB and stores it in
+  /// state so the autocomplete picker can display it.
+  Future<void> loadIngredients() async {
+    final result = await _getAllIngredients(NoParams());
+    result.fold(
+      (_) {}, // silently ignore — picker will just be empty
+      (ingredients) => emit(state.copyWith(allIngredients: ingredients)),
+    );
+  }
+
+  // ── Field Updates ──────────────────────────────────────────────────────────
 
   void nameChanged(String name) {
     emit(
@@ -54,7 +74,7 @@ class ProductFormCubit extends Cubit<ProductFormState> {
     );
   }
 
-  // ── Ingredient Management ──
+  // ── Ingredient Management ──────────────────────────────────────────────────
 
   void addIngredient() {
     final updated = List<Ingredient>.from(state.product.ingredients)
@@ -67,26 +87,50 @@ class ProductFormCubit extends Cubit<ProductFormState> {
     );
   }
 
-  void updateIngredientName(int index, String name) {
+  /// Selects a canonical ingredient from the catalogue for the row at [index].
+  /// Preserves the existing [quantityPerPiece] so the user doesn't lose it.
+  void selectIngredient(int index, Ingredient ingredient) {
+    final updated = List<Ingredient>.from(state.product.ingredients);
+    updated[index] = ingredient.copyWith(quantityPerPiece: updated[index].quantityPerPiece);
+    emit(
+      state.copyWith(
+        product: state.product.copyWith(ingredients: updated),
+        validationErrors: Map.of(state.validationErrors)..remove('ingredient_${index}_name'),
+      ),
+    );
+  }
+
+  /// Creates a new ingredient with the typed [name] and assigns it to [index].
+  /// The new ingredient is not persisted yet — that happens inside the data
+  /// source when the product is saved (upsert-on-write pattern).
+  void setIngredientName(int index, String name) {
     final updated = List<Ingredient>.from(state.product.ingredients);
     updated[index] = updated[index].copyWith(name: name);
-    emit(state.copyWith(product: state.product.copyWith(ingredients: updated)));
+    emit(
+      state.copyWith(
+        product: state.product.copyWith(ingredients: updated),
+        validationErrors: Map.of(state.validationErrors)..remove('ingredient_${index}_name'),
+      ),
+    );
   }
 
   void updateIngredientQuantity(int index, String value) {
-    final parsed = double.tryParse(value) ?? 0;
-    final updated = List<Ingredient>.from(state.product.ingredients);
-    updated[index] = updated[index].copyWith(quantityPerPiece: parsed);
-    emit(state.copyWith(product: state.product.copyWith(ingredients: updated)));
+    try {
+      final parsed = double.tryParse(value) ?? 0;
+      final updated = List<Ingredient>.from(state.product.ingredients);
+      updated[index] = updated[index].copyWith(quantityPerPiece: parsed);
+      emit(state.copyWith(product: state.product.copyWith(ingredients: updated)));
+    } catch (e) {
+      emit(state.copyWith(errorMessage: 'يجب ان تكون القيمة رقما صحيحا'));
+    }
   }
 
   void removeIngredient(int index, String id) {
     final updated = List<Ingredient>.from(state.product.ingredients)..removeAt(index);
-    final productss = state.product.copyWith(ingredients: updated);
-    emit(state.copyWith(product: productss));
+    emit(state.copyWith(product: state.product.copyWith(ingredients: updated)));
   }
 
-  // ── Validation ──
+  // ── Validation ─────────────────────────────────────────────────────────────
 
   Map<String, String> _validate() {
     final errors = <String, String>{};
@@ -121,7 +165,7 @@ class ProductFormCubit extends Cubit<ProductFormState> {
     return errors;
   }
 
-  // ── Save ──
+  // ── Save ───────────────────────────────────────────────────────────────────
 
   Future<void> saveProduct() async {
     final errors = _validate();

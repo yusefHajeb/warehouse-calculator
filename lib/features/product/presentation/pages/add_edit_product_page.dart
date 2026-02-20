@@ -86,9 +86,10 @@ class _IngredientsWithRows extends StatelessWidget {
     final cubit = context.read<ProductFormCubit>();
 
     return BlocBuilder<ProductFormCubit, ProductFormState>(
-      // buildWhen: (prev, curr) =>
-      //     prev.product.ingredients != curr.product.ingredients ||
-      //     prev.validationErrors != curr.validationErrors,
+      buildWhen: (prev, curr) =>
+          prev.product.ingredients != curr.product.ingredients ||
+          prev.validationErrors != curr.validationErrors ||
+          prev.allIngredients != curr.allIngredients,
       builder: (context, state) {
         final ingredients = state.product.ingredients;
 
@@ -138,11 +139,15 @@ class _IngredientsWithRows extends StatelessWidget {
                 child: IngredientRow(
                   nameValue: ingredients[index].name,
                   weightValue: ingredients[index].quantityPerPiece > 0
-                      ? ingredients[index].quantityPerPiece.toString()
+                      ? (ingredients[index].quantityPerPiece % 1 == 0
+                            ? ingredients[index].quantityPerPiece.toInt().toString()
+                            : ingredients[index].quantityPerPiece.toString())
                       : '',
                   nameError: state.validationErrors['ingredient_${index}_name'],
                   quantityError: state.validationErrors['ingredient_${index}_quantity'],
-                  onNameChanged: (name) => cubit.updateIngredientName(index, name),
+                  allIngredients: state.allIngredients,
+                  onIngredientSelected: (ing) => cubit.selectIngredient(index, ing),
+                  onNameTyped: (name) => cubit.setIngredientName(index, name),
                   onWeightChanged: (value) => cubit.updateIngredientQuantity(index, value),
                   onDelete: () => cubit.removeIngredient(index, ingredients[index].id),
                 ),

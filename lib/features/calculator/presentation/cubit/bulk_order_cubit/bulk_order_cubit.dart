@@ -12,8 +12,6 @@ class BulkOrderCubit extends Cubit<BulkOrderState> {
   BulkOrderCubit({required this.getProducts, required this.searchProducts})
     : super(const BulkOrderState());
 
-  // ── Product loading (for the add-item sheet) ──────────────────────────────
-
   Future<void> loadProducts() async {
     if (state.allProducts.isNotEmpty) return;
     emit(state.copyWith(status: BulkOrderStatus.loading));
@@ -79,6 +77,7 @@ class BulkOrderCubit extends Cubit<BulkOrderState> {
       final itemMaterials = item.product.ingredients.map((ingredient) {
         final requiredKg = totalPieces * ingredient.quantityPerPiece / 1000.0;
         return MaterialRequirement(
+          ingredientId: ingredient.id,
           ingredientName: ingredient.name,
           perPieceGrams: ingredient.quantityPerPiece,
           requiredKg: requiredKg,
@@ -99,29 +98,36 @@ class BulkOrderCubit extends Cubit<BulkOrderState> {
       );
     }
 
-    // ── Phase 2: aggregate shared ingredients ──────────────────────────────
+    // ── Phase 2: aggregate shared ingredients by id ────────────────────────
     final Map<String, _IngredientAccumulator> accumulator = {};
 
     for (final pr in productResults) {
       for (final m in pr.materials) {
         accumulator.update(
-          m.ingredientName,
+          m.ingredientId, // ← stable id, not mutable name string
           (a) => _IngredientAccumulator(
+            ingredientId: m.ingredientId,
+            ingredientName: a.ingredientName,
             perPieceGrams: a.perPieceGrams,
             totalKg: a.totalKg + m.requiredKg,
           ),
-          ifAbsent: () =>
-              _IngredientAccumulator(perPieceGrams: m.perPieceGrams, totalKg: m.requiredKg),
+          ifAbsent: () => _IngredientAccumulator(
+            ingredientId: m.ingredientId,
+            ingredientName: m.ingredientName,
+            perPieceGrams: m.perPieceGrams,
+            totalKg: m.requiredKg,
+          ),
         );
       }
     }
 
-    final aggregatedMaterials = accumulator.entries
+    final aggregatedMaterials = accumulator.values
         .map(
-          (e) => MaterialRequirement(
-            ingredientName: e.key,
-            perPieceGrams: e.value.perPieceGrams,
-            requiredKg: e.value.totalKg,
+          (a) => MaterialRequirement(
+            ingredientId: a.ingredientId,
+            ingredientName: a.ingredientName,
+            perPieceGrams: a.perPieceGrams,
+            requiredKg: a.totalKg,
           ),
         )
         .toList();
@@ -142,7 +148,14 @@ class BulkOrderCubit extends Cubit<BulkOrderState> {
 
 /// Internal accumulator used during Phase 2 ingredient merging.
 class _IngredientAccumulator {
+  final String ingredientId;
+  final String ingredientName;
   final double perPieceGrams;
   final double totalKg;
-  const _IngredientAccumulator({required this.perPieceGrams, required this.totalKg});
+  const _IngredientAccumulator({
+    required this.ingredientId,
+    required this.ingredientName,
+    required this.perPieceGrams,
+    required this.totalKg,
+  });
 }

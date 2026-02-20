@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failure_mapper.dart';
 import '../../../../core/error/failures.dart';
+import '../../domain/entities/ingredient.dart';
 import '../../domain/entities/product.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../datasources/product_local_data_source.dart';
@@ -68,6 +69,16 @@ class ProductRepositoryImpl implements ProductRepository {
     try {
       await localDataSource.deleteProduct(id);
       return const Right(unit);
+    } catch (e) {
+      return Left(FailureMapper.fromException(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<Ingredient>>> getAllIngredients() async {
+    try {
+      final ingredients = await localDataSource.getAllIngredients();
+      return Right(ingredients);
     } catch (e) {
       return Left(FailureMapper.fromException(e));
     }

@@ -5,7 +5,6 @@ import '../../../../core/router/app_router.dart';
 import '../widgets/calculation_header.dart';
 import '../widgets/product_selector.dart';
 import '../widgets/carton_quantity_input.dart';
-import '../widgets/calculation_info_banner.dart';
 import '../widgets/calculate_button.dart';
 
 class CalculateOrderPage extends StatelessWidget {
@@ -44,10 +43,7 @@ class CalculateOrderPage extends StatelessWidget {
             // ── Bulk order entry
             const Padding(padding: EdgeInsets.symmetric(horizontal: 24), child: _BulkOrderButton()),
             const SizedBox(height: 16),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24),
-              child: CalculationInfoBanner(),
-            ),
+
             const SizedBox(height: 8),
 
             // Bottom button

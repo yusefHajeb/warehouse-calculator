@@ -32,18 +32,21 @@ class CalculationResult extends Equatable {
 
 /// Per-ingredient material requirement.
 class MaterialRequirement extends Equatable {
+  /// Stable ingredient id — used for aggregation (Phase 2).
+  final String ingredientId;
   final String ingredientName;
   final double perPieceGrams;
   final double requiredKg;
 
   const MaterialRequirement({
+    required this.ingredientId,
     required this.ingredientName,
     required this.perPieceGrams,
     required this.requiredKg,
   });
 
   @override
-  List<Object?> get props => [ingredientName, perPieceGrams, requiredKg];
+  List<Object?> get props => [ingredientId, ingredientName, perPieceGrams, requiredKg];
 }
 
 // ─────────────────────────────────────────────────────────
