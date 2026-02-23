@@ -16,8 +16,10 @@ import '../../features/calculator/presentation/cubit/calulation_result_cubit/cal
 import '../../features/calculator/presentation/cubit/bulk_order_cubit/bulk_order_cubit.dart';
 import '../../features/calculator/presentation/cubit/bulk_result_cubit/bulk_result_cubit.dart';
 import '../../features/calculator/domain/entities/calculation_result.dart';
-import '../constants/app_colors.dart';
-import '../constants/app_strings.dart';
+import '../../features/order/presentation/cubit/order_list_cubit.dart';
+import '../../features/order/presentation/cubit/order_detail_cubit.dart';
+import '../../features/order/presentation/pages/saved_orders_page.dart';
+import '../../features/order/presentation/pages/order_detail_page.dart';
 import '../di/injection_container.dart';
 import '../widgets/main_shell.dart';
 
@@ -33,7 +35,8 @@ class AppRouter {
   static const String calculationResults = '/calculator/results';
   static const String bulkOrder = '/calculator/bulk';
   static const String bulkOrderResults = '/calculator/bulk/results';
-  static const String settings = '/settings';
+  static const String orders = '/orders';
+  static const String orderDetail = '/orders/detail';
 
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
   static final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -70,9 +73,12 @@ class AppRouter {
             ),
           ),
           GoRoute(
-            path: settings,
+            path: orders,
             pageBuilder: (context, state) => NoTransitionPage(
-              child: _PlaceholderPage(title: AppStrings.navSettings, icon: Icons.settings_rounded),
+              child: BlocProvider(
+                create: (_) => sl<OrderListCubit>()..loadOrders(),
+                child: const SavedOrdersPage(),
+              ),
             ),
           ),
         ],
@@ -123,42 +129,17 @@ class AppRouter {
           );
         },
       ),
+      // ── Order detail (`/orders/detail` with orderId in extra) ──
+      GoRoute(
+        path: '$orders/:orderId',
+        builder: (context, state) {
+          final orderId = state.pathParameters['orderId']!;
+          return BlocProvider(
+            create: (_) => sl<OrderDetailCubit>()..load(orderId),
+            child: const OrderDetailPage(),
+          );
+        },
+      ),
     ],
   );
-}
-
-/// Placeholder page for tabs without content yet.
-class _PlaceholderPage extends StatelessWidget {
-  const _PlaceholderPage({required this.title, required this.icon});
-
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 64, color: AppColors.primary.withValues(alpha: 0.3)),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.textDarkSecondary : AppColors.textSecondary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text('قريبًا...', style: TextStyle(fontSize: 14, color: AppColors.textTertiary)),
-          ],
-        ),
-      ),
-    );
-  }
 }

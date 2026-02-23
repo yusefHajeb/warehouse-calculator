@@ -4,7 +4,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const _dbName = 'product_management.db';
-  static const _dbVersion = 2;
+  static const _dbVersion = 3;
 
   static final DatabaseHelper instance = DatabaseHelper._init();
   static Database? _database;
@@ -60,11 +60,41 @@ class DatabaseHelper {
         FOREIGN KEY (ingredient_id) REFERENCES ingredients(id)
       )
     ''');
+
+    await db.execute('''
+      CREATE TABLE saved_orders (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        notes TEXT,
+        order_date INTEGER NOT NULL,
+        total_pieces INTEGER NOT NULL,
+        total_weight_kg REAL NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE saved_order_items (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL,
+        product_id TEXT,
+        product_name TEXT NOT NULL,
+        carton_count INTEGER NOT NULL,
+        pieces_per_box INTEGER NOT NULL,
+        boxes_per_carton INTEGER NOT NULL,
+        total_pieces INTEGER NOT NULL,
+        materials_json TEXT NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES saved_orders(id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await _migrateV1ToV2(db);
+    }
+    if (oldVersion < 3) {
+      await _migrateV2ToV3(db);
     }
   }
 
@@ -150,6 +180,34 @@ class DatabaseHelper {
     ''');
     await db.execute('DROP TABLE products');
     await db.execute('ALTER TABLE products_new RENAME TO products');
+  }
+
+  Future<void> _migrateV2ToV3(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS saved_orders (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        notes TEXT,
+        order_date INTEGER NOT NULL,
+        total_pieces INTEGER NOT NULL,
+        total_weight_kg REAL NOT NULL,
+        created_at INTEGER NOT NULL
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS saved_order_items (
+        id TEXT PRIMARY KEY,
+        order_id TEXT NOT NULL,
+        product_id TEXT,
+        product_name TEXT NOT NULL,
+        carton_count INTEGER NOT NULL,
+        pieces_per_box INTEGER NOT NULL,
+        boxes_per_carton INTEGER NOT NULL,
+        total_pieces INTEGER NOT NULL,
+        materials_json TEXT NOT NULL,
+        FOREIGN KEY (order_id) REFERENCES saved_orders(id) ON DELETE CASCADE
+      )
+    ''');
   }
 
   // ── Simple UUID v4 generator (no package dependency) ──────────────────────

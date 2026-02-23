@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../core/di/injection_container.dart';
 import '../../domain/entities/calculation_result.dart';
 import '../cubit/bulk_result_cubit/bulk_result_cubit.dart';
+import '../../../order/presentation/cubit/save_order_cubit.dart';
+import '../../../order/presentation/widgets/save_order_dialog.dart';
 
 /// Results page for a bulk production order.
 /// Shows:
@@ -12,12 +15,48 @@ import '../cubit/bulk_result_cubit/bulk_result_cubit.dart';
 class BulkResultsPage extends StatelessWidget {
   const BulkResultsPage({super.key});
 
+  void _showSaveDialog(BuildContext context, BulkCalculationResult result) {
+    showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => BlocProvider(
+        create: (_) => SaveOrderCubit(saveOrder: sl(), calculationResult: result),
+        child: const SaveOrderDialog(),
+      ),
+    ).then((saved) {
+      if (saved == true && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('تم حفظ الطلب بنجاح'),
+            backgroundColor: AppColors.statusAvailableText,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.backgroundDark : AppColors.backgroundLight,
+      floatingActionButton: BlocBuilder<BulkResultCubit, BulkCalculationResult>(
+        builder: (context, result) {
+          return FloatingActionButton.extended(
+            onPressed: () => _showSaveDialog(context, result),
+            backgroundColor: AppColors.primary,
+            icon: const Icon(Icons.save_rounded, color: Colors.white),
+            label: const Text(
+              'حفظ الطلب',
+              style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white),
+            ),
+          );
+        },
+      ),
       body: BlocBuilder<BulkResultCubit, BulkCalculationResult>(
         builder: (context, result) {
           return Column(

@@ -17,7 +17,7 @@ class MainShell extends StatelessWidget {
     if (location.startsWith(AppRouter.home)) return 0;
     if (location.startsWith(AppRouter.products)) return 1;
     if (location.startsWith(AppRouter.calculator)) return 2;
-    if (location.startsWith(AppRouter.settings)) return 3;
+    if (location.startsWith(AppRouter.orders)) return 3;
     return 1;
   }
 
@@ -44,14 +44,6 @@ class MainShell extends StatelessWidget {
               children: [
                 _navItem(
                   context: context,
-                  icon: Icons.home_rounded,
-                  label: AppStrings.navHome,
-                  path: AppRouter.home,
-                  isSelected: currentIndex == 0,
-                  isDark: isDark,
-                ),
-                _navItem(
-                  context: context,
                   icon: Icons.inventory_rounded,
                   label: AppStrings.navProducts,
                   path: AppRouter.products,
@@ -68,9 +60,9 @@ class MainShell extends StatelessWidget {
                 ),
                 _navItem(
                   context: context,
-                  icon: Icons.settings_rounded,
-                  label: AppStrings.navSettings,
-                  path: AppRouter.settings,
+                  icon: Icons.receipt_long_rounded,
+                  label: AppStrings.navOrders,
+                  path: AppRouter.orders,
                   isSelected: currentIndex == 3,
                   isDark: isDark,
                 ),

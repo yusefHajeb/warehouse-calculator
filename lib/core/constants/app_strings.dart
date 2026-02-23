@@ -52,6 +52,7 @@ class AppStrings {
   static const String navProducts = 'المنتجات';
   static const String navCalculator = 'الحاسبة';
   static const String navSettings = 'الإعدادات';
+  static const String navOrders = 'الطلبات';
   static const String navHistory = 'السجل';
   static const String navReports = 'التقارير';
 
